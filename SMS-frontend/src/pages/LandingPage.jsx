@@ -18,11 +18,13 @@
 //         </Link>
 
 //         {/* Customer Card */}
-//         <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col items-center opacity-70">
+//         <Link
+//           to="/customer/dashboard"
+//           className="bg-white shadow-md rounded-2xl p-6 flex flex-col items-center hover:shadow-lg transition"
+//         >
 //           <FaUsers className="text-orange-600 text-6xl mb-4" />
 //           <h2 className="text-xl font-semibold text-gray-700">Customer</h2>
-//           <p className="text-sm text-gray-500 mt-2">(Coming Soon)</p>
-//         </div>
+//         </Link>
 //       </div>
 //     </div>
 //   );
@@ -49,7 +51,7 @@ export default function LandingPage() {
 
         {/* Customer Card */}
         <Link
-          to="/customer/dashboard"
+          to="/customer/login"
           className="bg-white shadow-md rounded-2xl p-6 flex flex-col items-center hover:shadow-lg transition"
         >
           <FaUsers className="text-orange-600 text-6xl mb-4" />
@@ -59,4 +61,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
