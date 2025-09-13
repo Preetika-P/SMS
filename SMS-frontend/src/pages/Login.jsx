@@ -1,14 +1,28 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Username:", username);
-    console.log("Password:", password);
-    // Add login logic here
+
+    if (!username.includes("@")) {
+      alert("Invalid email format");
+      return;
+    }
+
+    const expectedPassword = username.split("@")[0]; // part before @
+
+    if (password === expectedPassword) {
+      // ✅ Login success → go to customer dashboard
+      navigate("/customer/dashboard");
+    } else {
+      // ❌ Wrong password
+      alert("Invalid username or password");
+    }
   };
 
   return (
@@ -21,7 +35,7 @@ function Login() {
           <div className="text-left">
             <label className="block text-sm text-gray-700 mb-1">Username</label>
             <input
-              type="text"
+              type="email"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -49,7 +63,10 @@ function Login() {
         </form>
 
         <p className="mt-4 text-sm text-gray-600">
-          Don't have an account? <a href="/signup" className="text-blue-500 font-semibold">Sign up</a>
+          Don't have an account?{" "}
+          <a href="/signup" className="text-blue-500 font-semibold">
+            Sign up
+          </a>
         </p>
       </div>
     </div>
