@@ -1,59 +1,63 @@
+// pages/Login.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-function Login() {
+const Login = ({ users }) => {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    console.log("Username:", username);
-    console.log("Password:", password);
-    // Add login logic here
+
+    if (!users || users.length === 0) {
+      setError("User data not loaded yet.");
+      return;
+    }
+
+    // ✅ Match username and email from Excel data
+    const user = users.find(
+      (u) =>
+        String(u.username).toLowerCase() === username.toLowerCase() &&
+        String(u.email).toLowerCase() === email.toLowerCase()
+    );
+
+    if (user) {
+      console.log("Login success:", user);
+      navigate("/customer/dashboard", { state: { user } });
+    } else {
+      setError("Invalid username or email");
+    }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-80 text-center">
-        <h2 className="text-2xl font-bold text-blue-900 mb-2">Lumen Quest 2.0</h2>
-        <p className="text-gray-600 mb-6">Welcome back to your subscription portal</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="text-left">
-            <label className="block text-sm text-gray-700 mb-1">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-
-          <div className="text-left">
-            <label className="block text-sm text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-semibold rounded-lg hover:opacity-90 transition"
-          >
-            Sign In
-          </button>
-        </form>
-
-        <p className="mt-4 text-sm text-gray-600">
-          Don't have an account? <a href="/signup" className="text-blue-500 font-semibold">Sign up</a>
-        </p>
-      </div>
+    <div className="p-6 max-w-sm mx-auto bg-white rounded-xl shadow-md">
+      <h2 className="text-xl font-bold mb-4">Login</h2>
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          className="border p-2 mb-2 w-full"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
+        <input
+          type="email"
+          placeholder="Email"
+          className="border p-2 mb-2 w-full"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        {error && <p className="text-red-500">{error}</p>}
+        <button className="bg-orange-500 text-white px-4 py-2 rounded w-full">
+          Login
+        </button>
+      </form>
     </div>
   );
-}
+};
 
 export default Login;
