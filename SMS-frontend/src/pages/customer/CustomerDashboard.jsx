@@ -1,18 +1,6 @@
-// export default function CustomerDashboard() {
-//   return (
-//     <div className="p-6">
-//       <h1 className="text-2xl font-bold text-gray-800 mb-4">
-//         Customer Dashboard
-//       </h1>
-//       <p className="text-gray-600">
-//         🚀 Welcome! Customer features will be implemented here later.
-//       </p>
-//     </div>
-//   );
-// }
 import React, { useState, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Users, Package, Edit, Trash2, PlusCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Users, Package, Edit, Trash2, PlusCircle, XCircle, RefreshCw, Bell } from 'lucide-react';
 
 // --- Global CSS for new components ---
 const GlobalStyles = () => (
@@ -37,7 +25,7 @@ const GlobalStyles = () => (
     .notification-list {
       list-style: none;
       padding: 0;
-      max-height: 300px;
+      max-height: 100%;
       overflow-y: auto;
     }
     .notification-item {
@@ -77,6 +65,63 @@ const GlobalStyles = () => (
       text-align: center;
       color: #999;
       padding: 20px;
+    }
+
+    /* Notification Panel Styles */
+    .notification-panel-overlay {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 100;
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+    .notification-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 400px;
+      height: 100%;
+      background-color: white;
+      box-shadow: -5px 0 25px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      animation: slideInRight 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    .notification-panel-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .notification-panel-header h3 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #111827;
+    }
+    .notification-panel-header button {
+        font-size: 1.75rem;
+        font-weight: bold;
+        line-height: 1;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        transition: color 0.2s;
+    }
+    .notification-panel-header button:hover {
+        color: #111827;
+    }
+    .notification-panel .notification-list {
+        padding: 1.5rem;
     }
   `}</style>
 );
@@ -139,25 +184,31 @@ const LandingPage = ({ navigateTo }) => {
   );
 }
 
-const NotificationHistory = ({ notifications }) => {
-  return (
-    <div className="notifications-container">
-      <h3>Recent Activity</h3>
-      {notifications.length === 0 ? (
-        <p className="empty">No notifications recorded yet.</p>
-      ) : (
-        <ul className="notification-list">
-          {notifications.map((n) => (
-            <li key={n.id} className={`notification-item ${n.type}`}>
-              <div className="message">{n.message}</div>
-              <div className="date">{n.date}</div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
+const NotificationPanel = ({ notifications, onClose }) => {
+    return (
+        <div className="notification-panel-overlay" onClick={onClose}>
+            <div className="notification-panel" onClick={(e) => e.stopPropagation()}>
+                <div className="notification-panel-header">
+                    <h3>Notifications</h3>
+                    <button onClick={onClose}>&times;</button>
+                </div>
+                <div className="notification-list">
+                    {notifications.length === 0 ? (
+                        <p className="empty">No notifications yet.</p>
+                    ) : (
+                        notifications.map((n) => (
+                            <li key={n.id} className={`notification-item ${n.type}`}>
+                                <div className="message">{n.message}</div>
+                                <div className="date">{n.date}</div>
+                            </li>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 };
+
 
 const PlanCard = ({ plan, onAction, userSubscription }) => {
     const isCurrentUserPlan = userSubscription?.plan.id === plan.id;
@@ -199,7 +250,7 @@ const PlanCard = ({ plan, onAction, userSubscription }) => {
     );
 };
 
-const UserPortal = ({ plans, userSubscription, handleSubscribe, handleUpgradeDowngrade, handleCancel, handleRenew, notifications }) => (
+const UserPortal = ({ plans, userSubscription, handleSubscribe, handleUpgradeDowngrade, handleCancel, handleRenew }) => (
     <div className="p-4 md:p-8">
         
         {userSubscription && (
@@ -222,8 +273,6 @@ const UserPortal = ({ plans, userSubscription, handleSubscribe, handleUpgradeDow
                 </div>
             </div>
         )}
-
-        <NotificationHistory notifications={notifications} />
 
         <h2 className="text-4xl font-bold text-gray-800 mb-8 text-center">Explore Our Plans</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -344,6 +393,7 @@ function App() {
     const [plans, setPlans] = useState(initialPlans);
     const [userSubscription, setUserSubscription] = useState(null);
     const [notifications, setNotifications] = useState([]);
+    const [showNotificationPanel, setShowNotificationPanel] = useState(false);
 
     // Load notifications from localStorage on initial render
     useEffect(() => {
@@ -368,8 +418,16 @@ function App() {
           message,
           date: new Date().toLocaleString(),
           type,
+          read: false,
         };
         setNotifications(prev => [newNotification, ...prev]);
+    };
+
+    const handleBellClick = () => {
+        setShowNotificationPanel(true);
+        setNotifications(prevNotifications => 
+            prevNotifications.map(n => ({...n, read: true}))
+        );
     };
 
     const handleSubscribe = (plan) => {
@@ -399,35 +457,42 @@ function App() {
             addNotification('renew', `Renewed ${userSubscription.plan.name}. New expiry: ${newExpiry.toLocaleDateString()}`);
         }
     };
-
-    const renderPage = () => {
-        switch (currentPage) {
-            case 'customer':
-                return <UserPortal plans={plans} userSubscription={userSubscription} handleSubscribe={handleSubscribe} handleUpgradeDowngrade={handleUpgradeDowngrade} handleCancel={handleCancel} handleRenew={handleRenew} notifications={notifications} />;
-            case 'admin':
-                return <AdminDashboard plans={plans} setPlans={setPlans} />;
-            case 'landing':
-            default:
-                return <LandingPage navigateTo={setCurrentPage} />;
-        }
-    };
     
+    const unreadCount = notifications.filter(n => !n.read).length;
+
     return (
         <div className="min-h-screen bg-gray-100 font-sans">
             <GlobalStyles />
             {currentPage !== 'landing' && (
-                <header className="bg-white shadow-md">
+                <header className="bg-white shadow-md sticky top-0 z-50">
                     <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
                         <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setCurrentPage('landing')}>
                              <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                             <h1 className="text-2xl font-bold text-gray-800">Lumen Subscriptions</h1>
+                        </div>
+                        <div className="relative">
+                            <button onClick={handleBellClick} className="relative text-gray-600 hover:text-indigo-600">
+                                <Bell className="w-6 h-6" />
+                                {unreadCount > 0 && 
+                                    <span className="absolute -top-2 -right-2 flex h-5 w-5">
+                                        <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-white text-xs items-center justify-center">
+                                            {unreadCount}
+                                        </span>
+                                    </span>
+                                }
+                            </button>
                         </div>
                     </nav>
                 </header>
             )}
 
             <main>
-                {renderPage()}
+                {showNotificationPanel && <NotificationPanel notifications={notifications} onClose={() => setShowNotificationPanel(false)} />}
+                
+                {currentPage === 'landing' && <LandingPage navigateTo={setCurrentPage} />}
+                {currentPage === 'customer' && <UserPortal plans={plans} userSubscription={userSubscription} handleSubscribe={handleSubscribe} handleUpgradeDowngrade={handleUpgradeDowngrade} handleCancel={handleCancel} handleRenew={handleRenew} />}
+                {currentPage === 'admin' && <AdminDashboard plans={plans} setPlans={setPlans} />}
+
             </main>
 
             {currentPage !== 'landing' && (
