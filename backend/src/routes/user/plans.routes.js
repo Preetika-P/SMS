@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createPlan, getPlans } = require('../controllers/plans.controller');
+const { createPlan, getPlans } = require('../../controllers/plans.controller');
 
 router.post('/', createPlan);
 router.get('/', getPlans);
