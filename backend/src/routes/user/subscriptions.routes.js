@@ -3,7 +3,7 @@ const {
   subscribe,
   cancelSubscription,
   getUserSubscriptions
-} = require('../controllers/subscriptions.controller');
+} = require('../../controllers/subscriptions.controller');
 
 router.post('/', subscribe);
 router.post('/:id/cancel', cancelSubscription);
