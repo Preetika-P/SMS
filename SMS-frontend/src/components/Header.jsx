@@ -5,14 +5,20 @@ import logo from "../assets/logo.svg";
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
+
   const isAdmin = location.pathname.startsWith("/admin");
+  const isCustomer = location.pathname.startsWith("/customer/dashboard");
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken"); 
+  const handleAdminLogout = () => {
+    localStorage.removeItem("adminToken");
     sessionStorage.removeItem("adminToken");
+    navigate("/"); // back to landing
+  };
 
-    // Redirect to landing page
-    navigate("/");
+  const handleCustomerLogout = () => {
+    localStorage.removeItem("customerToken");
+    sessionStorage.removeItem("customerToken");
+    navigate("/"); // back to landing
   };
 
   return (
@@ -25,10 +31,9 @@ export default function Header() {
         </span>
       </div>
 
-      {/* Navigation only for Admin */}
+      {/* Admin Navigation */}
       {isAdmin && (
         <div className="flex items-center space-x-8">
-          {/* Nav Links */}
           <nav className="flex space-x-6 text-gray-700 font-medium">
             <Link to="/admin/dashboard" className="hover:text-orange-600">
               Dashboard
@@ -41,15 +46,25 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Hi! Admin + Icon */}
           <div className="flex items-center space-x-2 text-gray-700 font-medium">
             <FaUserShield className="text-orange-600 w-5 h-5" />
             <span>Hi! Admin</span>
           </div>
 
-          {/* Logout Button */}
           <button
-            onClick={handleLogout}
+            onClick={handleAdminLogout}
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+
+      {/* Customer Logout */}
+      {isCustomer && (
+        <div>
+          <button
+            onClick={handleCustomerLogout}
             className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition"
           >
             Logout
